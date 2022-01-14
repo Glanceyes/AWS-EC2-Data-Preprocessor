@@ -57,7 +57,7 @@ class LifeScore:
         resultDataFrame = pd.DataFrame(result, columns = ['user_id', 'pageResult'])
         return resultDataFrame
     
-    def updateLifeScore(self, resultData):
+    def procLifeScore(self, resultData):
         scoreDomain = ['직업', '학습', '건강', '관계', '주거', '사회참여', '여가', '재무']
         scoreData = pd.DataFrame()
         
@@ -76,10 +76,10 @@ class LifeScore:
         scoreData = scoreData.astype('int')
         return scoreData
     
-    def doLifeScore(self):
+    def writeLifeScore(self):
         resultData = self.getLifeScore()
-        lifeScoreData = self.updateLifeScore(resultData)
-        print(lifeScoreData)
+        lifeScoreData = self.procLifeScore(resultData)
+        # print(lifeScoreData)
         return lifeScoreData
 
 # + active=""

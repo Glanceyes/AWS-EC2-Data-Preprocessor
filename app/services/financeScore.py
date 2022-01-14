@@ -64,7 +64,7 @@ class FinanceScore:
         return resultDataFrame
     
     
-    def updateFinanceScore(self, resultData):
+    def procFinanceScore(self, resultData):
         scoreDomain = {"FinanceIndex": "금융성향", 
                        "InvestmentIndex": "투자성향", 
                        "ConsumptionIndex": "소비성향", 
@@ -90,10 +90,10 @@ class FinanceScore:
         scoreData = scoreData.astype('int')
         return scoreData
     
-    def doFinanceScore(self):
+    def writeFinanceScore(self):
         resultData = self.getFinanceScore()
-        financeScoreData = self.updateFinanceScore(resultData)
-        print(financeScoreData)
+        financeScoreData = self.procFinanceScore(resultData)
+        # print(financeScoreData)
         return financeScoreData
 
 # + active=""

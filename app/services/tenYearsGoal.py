@@ -43,9 +43,9 @@ class TenYearsGoal:
     
     # Class Variable
     domain = { "user_id": "id", 
-                "year": "10년 목표연도", 
-                "division": "10년 목표영역",
-                "content": "10년 목표키워드",
+                "year": "십년_목표연도", 
+                "division": "십년_목표영역",
+                "content": "십년_목표키워드",
             }
     
     columnKeyList = list(domain.keys())
@@ -68,7 +68,7 @@ class TenYearsGoal:
         resultDataFrame = pd.DataFrame(result, columns = TenYearsGoal.columnKeyList)
         return resultDataFrame
     
-    def updateTenYearsGoal(self, resultData):
+    def procTenYearsGoal(self, resultData):
         tenYearsGoalData = pd.DataFrame(columns = TenYearsGoal.columnValueList)
         
         for value in resultData.values:
@@ -89,14 +89,14 @@ class TenYearsGoal:
             
             tenYearsGoalData = tenYearsGoalData.append(row, ignore_index = True)
         
-        tenYearsGoalData = tenYearsGoalData.fillna({"10년 목표키워드": ""})
-        tenYearsGoalData = tenYearsGoalData.astype({"id": int, "10년 목표연도": int, "10년 목표영역": int})
+        # tenYearsGoalData = tenYearsGoalData.fillna({"10년 목표키워드": ""})
+        tenYearsGoalData = tenYearsGoalData.astype({"id": int, "십년_목표연도": int, "십년_목표영역": int})
         return tenYearsGoalData
     
-    def doTenYearsGoal(self):
+    def writeTenYearsGoal(self):
         resultData = self.getTenYearsGoal()
-        tenYearsGoalData = self.updateTenYearsGoal(resultData)
-        print(tenYearsGoalData)
+        tenYearsGoalData = self.procTenYearsGoal(resultData)
+        # print(tenYearsGoalData)
         return tenYearsGoalData
 
 # + active=""

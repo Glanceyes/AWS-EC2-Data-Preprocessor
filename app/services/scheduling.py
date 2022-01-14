@@ -86,7 +86,7 @@ class Scheduling:
     
     
     
-    def updateScheduling(self, resultData):
+    def procScheduling(self, resultData):
         schedulingData = pd.DataFrame(columns = Scheduling.columnValueList)
             
         # 재무 외의 목표를 읽어서 데이터 프레임으로 만든다.
@@ -124,17 +124,16 @@ class Scheduling:
                 
             schedulingData = schedulingData.append(row, ignore_index = True)
             
-        schedulingData = schedulingData.fillna({"시간관리키워드": "", "목표활동완료": "", "일반활동완료" : ""})
-        schedulingData = schedulingData.reindex(columns = Scheduling.columnOrder)
-        
+        # schedulingData = schedulingData.fillna({"시간관리키워드": "", "목표활동완료": "", "일반활동완료" : ""})
+        schedulingData = schedulingData.reindex(columns = Scheduling.columnOrder)      
         return schedulingData
     
     
     
-    def doScheduling(self):
+    def writeScheduling(self):
         resultData = self.getScheduling()
-        schedulingData = self.updateScheduling(resultData)
-        print(schedulingData)
+        schedulingData = self.procScheduling(resultData)
+        # print(schedulingData)
         return schedulingData
 
 # + active=""
