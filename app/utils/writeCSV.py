@@ -33,8 +33,8 @@ def writeToCSV(df, folderName, fileName):
         makeDir(dirPath)
 
     if folderName is not None:
-        df.to_csv("./data/{0}/{1}.csv".format(folderName, fileName), mode='w', index=False)
+        df.to_csv("./data/{0}/{1}.csv".format(folderName, fileName), mode='w', index=False, encoding="utf-8-sig")
     else :
-        df.to_csv("./data/{0}.csv".format(fileName), mode='w')
+        df.to_csv("./data/{0}.csv".format(fileName), mode='w', encoding="utf-8-sig")
 
 

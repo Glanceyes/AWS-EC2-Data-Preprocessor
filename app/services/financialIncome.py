@@ -72,7 +72,7 @@ class FinancialIncome:
 
     def __init__(self, cursor):
         self.cursor = cursor
-        self.financialIncomeLive = FinancialIncomeLive(cursor)
+        self.FinancialIncomeLive = FinancialIncomeLive(cursor)
 
 
         
@@ -136,7 +136,7 @@ class FinancialIncome:
     
     def writeFinancialIncome(self):
         financialIncomeRawData = self.getFinancialIncome()
-        financialIncomeLiveRawData = self.financialIncomeLive.getFinancialIncomeLive()
+        financialIncomeLiveRawData = self.FinancialIncomeLive.getFinancialIncomeLive()
     
         financialIncomeData = self.procFinancialIncome(financialIncomeRawData, financialIncomeLiveRawData)
         return financialIncomeData
@@ -175,13 +175,14 @@ class FinancialIncomeLive:
         return resultDataFrame
 
 
-# + active=""
-# # Only for test
-#
-# cursor = connectMySQL()
-# financialIncomeInstance = FinancialIncome(cursor)
-# financialIncomeData = financialIncomeInstance.writeFinancialIncome()
-# display(financialIncomeData)
+# +
+# Only for test
+
+cursor = connectMySQL()
+financialIncomeInstance = FinancialIncome(cursor)
+financialIncomeData = financialIncomeInstance.writeFinancialIncome()
+display(financialIncomeData)
 # -
+
 
 

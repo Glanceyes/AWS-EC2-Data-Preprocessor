@@ -49,7 +49,7 @@ from utils.writeCSV import writeToCSV
 
 cursor = connectMySQL()
 
-pd.set_option('display.max_rows', 10)
+pd.set_option('display.max_rows', 50)
 
 # lifeScore 데이터 전처리 후 csv 파일 작성 
 lifeScoreInstance = LifeScore(cursor)
