@@ -42,6 +42,8 @@ from services.scheduling import Scheduling
 from services.visionKeyword import VisionKeyword
 from services.financialExpense import FinancialExpense
 from services.financialIncome import FinancialIncome
+from services.financialAssetGoal import FinancialAssetGoal
+from services.financialAsset import FinancialAsset
 
 # 유틸리티 계층 class import
 from utils.connectDB import connectMySQL
@@ -104,3 +106,15 @@ financialIncomeInstance = FinancialIncome(cursor)
 financialIncomeData = financialIncomeInstance.writeFinancialIncome()
 display(financialIncomeData)
 writeToCSV(financialIncomeData, "financial_inc", "financial_inc")
+
+# financialAssetGoal 데이터 전처리 후 csv 파일 생성
+financialAssetGoalInstance = FinancialAssetGoal(cursor)
+financialAssetGoalData = financialAssetGoalInstance.writeFinancialAssetGoal()
+display(financialAssetGoalData)
+writeToCSV(financialAssetGoalData, "financial_asset_goal", "financial_asset_goal")
+
+# financialAsset 데이터 전처리 후 csv 파일 생성
+financialAssetInstance = FinancialAsset(cursor)
+financialAssetData = financialAssetInstance.writeFinancialAsset()
+display(financialAssetData)
+writeToCSV(financialAssetData, "financial_asset", "financial_asset")

@@ -23,12 +23,12 @@ import json
 import pymysql
 import json
 import csv
+import ast
 import import_ipynb
 import numpy as np
 import pandas as pd
 import datetime as dt
 from dateutil.parser import parse
-from IPython.display import display
 
 # +
 # 다른 디렉토리에 있는 모듈 import
@@ -38,94 +38,86 @@ if module_path not in sys.path:
     sys.path.append(module_path)
     
 from utils.connectDB import connectMySQL
-
-
 # -
+
+pd.set_option('display.max_rows', None)
+pd.options.display.float_format = '{:.0f}'.format
+
 
 class FinancialAsset:
     
     # Class Variable
-    domain = { "user_id": "id", 
-                "kinds_index": "자산_목표_종류", 
-                "targetCost": "자산_목표",
-                "actualCost": "지출_현황",
-                "useOrSave": "지출_종류"
-            }
     
-    expenseSection = ['직업', '학습', '건강', '관계', '주거', '사회참여', '여가', '재무']
+    domain = { 
+        "user_id": "id",
+        "kinds_index": "자산_목표_종류",
+        "cost": "자산_목표_현황"
+    }
     
-    columnKeyList = list(domain.keys())
-    columnValueList = list(domain.values())
+    assetsSection = ['부동산 자산', '사용 자산', '현금성 자산', '금융 자산', '보장 자산']
     
-    expenseType = {0: "소멸성", 1: "지출성"}
+    nonMappingColumnKey = []
+    nonMappingColumnValue = []
+    
+    columnKeyList = list(domain.keys()) + nonMappingColumnKey
+    columnValueList = list(domain.values()) + nonMappingColumnValue
     
     columnType = {
         "id": 'Int64', 
-        "지출_목표_영역": 'Int64', 
-        "지출_목표": 'Int64', 
-        "지출_현황": 'Int64'
+        "자산_목표_종류": 'Int64',
+        "자산_목표_현황": 'Int64'
     }
     
+    
+
     def __init__(self, cursor):
         self.cursor = cursor
-  
 
 
-    def getFinancialExpense(self):
+        
+    def getFinancialAsset(self):
         sqlQuery = """
-                    SELECT * FROM pro.SpendLedger
+                    SELECT user_id, kinds_index, SUM(cost) as cost
+                    FROM pro.CompositeAssets
+                    GROUP BY user_id, kinds_index;
                     """
         self.cursor.execute(sqlQuery)
         result = self.cursor.fetchall()
-        resultDataFrame = pd.DataFrame(result, columns = FinancialExpense.columnKeyList)
+        resultDataFrame = pd.DataFrame(result, columns = FinancialAsset.columnKeyList)
         return resultDataFrame
     
-        
     
-    def procFinancialExpense(self, resultData):
-        financialExpenseData = pd.DataFrame(columns = FinancialExpense.columnValueList)
+    
+    def procFinancialAsset(self, financialAssetRawData):
+        financialAssetData = pd.DataFrame(columns = FinancialAsset.columnValueList)
             
-        # 지출 내역을 가져와서 데이터프레임을 만든다.
-        for value in resultData.values:
+        # 재무 목표에서 자산에 해당되는 데이터를 가져와서 데이터프레임을 만든다.
+        for value in financialAssetRawData.values:
             row = dict()
             
-            for index in range(len(FinancialExpense.domain)):
-                columnKey = FinancialExpense.columnKeyList[index]
-                columnValue = FinancialExpense.columnValueList[index]
+            for index in range(len(FinancialAsset.domain)):
+                columnKey = FinancialAsset.columnKeyList[index]
+                columnValue = FinancialAsset.columnValueList[index]
+                row[columnValue] = value[index]
                 
-                try:
-                    # cat_eight 컬럼 값에 따라서 지출_목표_영역 컬럼 값이 정해진다. 
-                    if (columnKey == "cat_eight"):
-                        row[columnValue] = FinancialExpense.expenseSection[int(value[index])]
-
-                    # 지출이 소멸성인지 저축성인지에 따라서 지출_종류 컬럼 값이 정해진다.
-                    elif (columnKey == "useOrSave"):
-                        row[columnValue] = FinancialExpense.expenseType.get(int(value[index]), None)
-
-                    else:
-                        row[columnValue] = value[index]
-                except:
-                    continue
-                
-            financialExpenseData = financialExpenseData.append(row, ignore_index = True)
+            financialAssetData = financialAssetData.append(row, ignore_index = True)
         
-        
-        return financialExpenseData
+        return financialAssetData
    
     
-    def writeFinancialExpense(self):
-        resultData = self.getFinancialExpense()
-        financialExpenseData = self.procFinancialExpense(resultData)
-        financialExpenseData = financialExpenseData.fillna({"지출_종류": ""})
-        financialExpenseData = financialExpenseData.astype(FinancialExpense.columnType, errors='ignore')
-        return financialExpenseData
+    def writeFinancialAsset(self):
+        financialAssetRawData = self.getFinancialAsset()
+    
+        financialAssetData = self.procFinancialAsset(financialAssetRawData)
+        return financialAssetData
 
 # + active=""
 # # Only for test
 #
 # cursor = connectMySQL()
-# financialExpenseInstance = FinancialExpense(cursor)
-# financialExpenseInstance.writeFinancialExpense()
+# financialAssetInstance = FinancialAsset(cursor)
+# financialAssetData = financialAssetInstance.writeFinancialAsset()
+# display(financialAssetData)
 # -
 
 

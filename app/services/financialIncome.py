@@ -175,13 +175,13 @@ class FinancialIncomeLive:
         return resultDataFrame
 
 
-# +
-# Only for test
-
-cursor = connectMySQL()
-financialIncomeInstance = FinancialIncome(cursor)
-financialIncomeData = financialIncomeInstance.writeFinancialIncome()
-display(financialIncomeData)
+# + active=""
+# # Only for test
+#
+# cursor = connectMySQL()
+# financialIncomeInstance = FinancialIncome(cursor)
+# financialIncomeData = financialIncomeInstance.writeFinancialIncome()
+# display(financialIncomeData)
 # -
 
 

@@ -63,9 +63,9 @@ class FinancialAssetGoal:
     
     columnType = {
         "id": 'Int64', 
+        "자산_목표_연도": 'Int64', 
         "자산_목표_종류": 'Int64', 
-        "자산_목표": 'Int64', 
-        "자산_목표_현황": 'Int64'
+        "자산_목표": 'Int64'
     }
     
     
@@ -124,13 +124,13 @@ class FinancialAssetGoal:
         financialAssetGoalData = self.procFinancialAssetGoal(financialAssetGoalRawData)
         return financialAssetGoalData
 
-# +
-# Only for test
-
-cursor = connectMySQL()
-financialAssetGoalInstance = FinancialAssetGoal(cursor)
-financialAssetGoalData = financialAssetGoalInstance.writeFinancialAssetGoal()
-display(financialAssetGoalData)
+# + active=""
+# # Only for test
+#
+# cursor = connectMySQL()
+# financialAssetGoalInstance = FinancialAssetGoal(cursor)
+# financialAssetGoalData = financialAssetGoalInstance.writeFinancialAssetGoal()
+# display(financialAssetGoalData)
 # -
 
 
