@@ -51,8 +51,11 @@ class VisionKeyword:
     
     visionSection = ['직업', '학습', '건강', '관계', '주거', '사회참여', '여가']
     
-    columnKeyList = list(domain.keys()) + ['visions']
-    columnValueList = list(domain.values()) + visionSection
+    nonMappingColumnKey = ['visions']
+    nonMappingColumnValue = ['비전_영역', '비전_키워드']
+    
+    columnKeyList = list(domain.keys()) + nonMappingColumnKey
+    columnValueList = list(domain.values()) + nonMappingColumnValue
     
     keywordExtractorInstance = KeywordExtractor()
 
@@ -80,7 +83,13 @@ class VisionKeyword:
             
         # 재무 외의 목표를 읽어서 데이터 프레임으로 만든다.
         for value in resultData.values:
-            row = dict()
+            defaultRow = dict()
+            
+            for index in range(len(VisionKeyword.domain)):
+                columnKey = VisionKeyword.columnKeyList[index]
+                columnValue = VisionKeyword.columnValueList[index]
+                
+                defaultRow[columnValue] = value[index]
             
             for index in range(len(VisionKeyword.columnKeyList)):
                 columnKey = VisionKeyword.columnKeyList[index]
@@ -93,14 +102,12 @@ class VisionKeyword:
                         try:
                             textlist = ast.literal_eval(value[index])
                             extractKeyword = VisionKeyword.keywordExtractorInstance.extractKeyword
-                            row[visionName] = extractKeyword(textlist[index2])
+                            row = defaultRow.copy()
+                            row["비전_영역"] = visionName
+                            row["비전_키워드"] = extractKeyword(textlist[index2])
+                            visionKeywordData = visionKeywordData.append(row, ignore_index = True)
                         except:
                             continue
-                
-                else:
-                    row[columnValue] = value[index]
-                
-            visionKeywordData = visionKeywordData.append(row, ignore_index = True)
             
         return visionKeywordData
     
@@ -110,13 +117,11 @@ class VisionKeyword:
         # print(visionKeywordData)
         return visionKeywordData
 
-# + active=""
-# # Only for test
-# cursor = connectMySQL()
-# visionKeywordInstance = VisionKeyword(cursor)
-# resultDataFrame = visionKeywordInstance.getVisionKeyword()
-# visionKeywordData = visionKeywordInstance.updateVisionKeyword(resultDataFrame)
-# print(visionKeywordData)
-# -
+# Only for test
+cursor = connectMySQL()
+visionKeywordInstance = VisionKeyword(cursor)
+resultDataFrame = visionKeywordInstance.getVisionKeyword()
+visionKeywordData = visionKeywordInstance.procVisionKeyword(resultDataFrame)
+print(visionKeywordData)
 
 

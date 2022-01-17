@@ -74,7 +74,7 @@ class TenYearsGoal:
         for value in resultData.values:
             row = dict()
             
-            for index in range(len(TenYearsGoal.columnValueList)):
+            for index in range(len(TenYearsGoal.columnKeyList)):
                 columnKey = TenYearsGoal.columnKeyList[index]
                 columnValue = TenYearsGoal.columnValueList[index]
                 

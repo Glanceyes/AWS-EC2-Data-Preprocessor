@@ -39,6 +39,26 @@ from utils.connectDB import connectMySQL
 # -
 
 class FinanceScore:
+    # Class Variable
+    domain = { 
+            "user_id": "id", 
+            "type": "재무_성향",
+            "totalPoint": "재무_성향_수치"
+            }
+    
+    scoreSection = {
+            "FinanceIndex": "금융성향", 
+            "InvestmentIndex": "투자성향", 
+            "ConsumptionIndex": "소비성향", 
+            "DebtIndex": "부채관리성향"
+        }
+    
+    nonMappingColumnKey = []
+    nonMappingColumnValue = []
+    
+    columnKeyList = list(domain.keys()) + nonMappingColumnKey
+    columnValueList = list(domain.values()) + nonMappingColumnValue
+    
     def __init__(self, cursor):
         self.cursor = cursor
         
@@ -60,35 +80,35 @@ class FinanceScore:
                     """
         self.cursor.execute(sqlQuery)
         result = self.cursor.fetchall()
-        resultDataFrame = pd.DataFrame(result, columns = ['user_id', 'type', 'totalPoint'])
+        resultDataFrame = pd.DataFrame(result, columns = FinanceScore.columnKeyList)
         return resultDataFrame
     
     
     def procFinanceScore(self, resultData):
-        scoreDomain = {"FinanceIndex": "금융성향", 
-                       "InvestmentIndex": "투자성향", 
-                       "ConsumptionIndex": "소비성향", 
-                       "DebtIndex": "부채관리성향"}
-        
-        scoreData = pd.DataFrame(columns = ["id"] + list(scoreDomain.values()))
+        financeScoreData = pd.DataFrame(columns = FinanceScore.columnValueList)
         
         # totalPoint 컬럼은 불러온 데이터 프레임의 3번째 column(index상 2번째)에 해당된다.
         columnIndex = 2 # index 기준
         
         for value in resultData.values:
-            typeName = scoreDomain.get(value[1], None)
-            if (typeName is None):
-                continue
+            row = dict()
             
-            findData = scoreData.loc[scoreData['id'] == value[0]]
-            if (findData.empty):
-                scoreData = scoreData.append({'id': int(value[0])}, ignore_index = True)
+            for index in range(len(FinanceScore.columnKeyList)):
+                columnKey = FinanceScore.columnKeyList[index]
+                columnValue = FinanceScore.columnValueList[index]
                 
-            scoreData.loc[scoreData['id'] == value[0], ("{}".format(typeName))] = int(value[columnIndex])
+                if (columnKey == "type"):
+                    typeName = FinanceScore.scoreSection.get(value[1], None)
+                    if (typeName is not None):
+                        row[columnValue] = typeName
+                        continue
+                else:
+                    row[columnValue] = value[index]
+                    
+            financeScoreData = financeScoreData.append(row, ignore_index = True)
         
-        scoreData = scoreData.fillna(0)
-        scoreData = scoreData.astype('int')
-        return scoreData
+        financeScoreData = financeScoreData.fillna(0)
+        return financeScoreData
     
     def writeFinanceScore(self):
         resultData = self.getFinanceScore()
@@ -96,13 +116,11 @@ class FinanceScore:
         # print(financeScoreData)
         return financeScoreData
 
-# + active=""
-# # Only for test
-# cursor = connectMySQL()
-# financeScoreInstance = FinanceScore(cursor)
-# resultDataFrame = financeScoreInstance.getFinanceScore()
-# scoreData = financeScoreInstance.updateFinanceScore(resultDataFrame)
-# print(scoreData)
-# -
+# Only for test
+cursor = connectMySQL()
+financeScoreInstance = FinanceScore(cursor)
+resultDataFrame = financeScoreInstance.getFinanceScore()
+financeScoreData = financeScoreInstance.procFinanceScore(resultDataFrame)
+print(financeScoreData)
 
 
