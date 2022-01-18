@@ -1,7 +1,11 @@
 **/.ipynb_checkpoints/
 **/__pycache__/
+**/.virtual_documents/
 
 *.csv
 *.ipynb
+*.sh
 
 .gitmessage.txt
+__init__.py
+app-result.ipynb

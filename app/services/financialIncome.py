@@ -115,7 +115,7 @@ class FinancialIncome:
                     defaultRow["소득_월"] = "{}".format(index + 1)
                     for index2 in range(len(FinancialIncome.incomeSection)):
                         row = defaultRow.copy()
-                        row["소득_목표_종류"] = index2
+                        row["소득_목표_종류"] = FinancialIncome.incomeSection[index2]
                         row["소득_목표"] = earnMonthList[index][index2] * 10000
                         
                         incomeLiveDataFrame = financialIncomeLiveRawData
@@ -183,6 +183,4 @@ class FinancialIncomeLive:
 # financialIncomeData = financialIncomeInstance.writeFinancialIncome()
 # display(financialIncomeData)
 # -
-
-
 

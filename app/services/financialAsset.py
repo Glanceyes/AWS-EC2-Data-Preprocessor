@@ -64,7 +64,7 @@ class FinancialAsset:
     
     columnType = {
         "id": 'Int64', 
-        "자산_목표_종류": 'Int64',
+        "자산_목표_종류": 'str',
         "자산_목표_현황": 'Int64'
     }
     
@@ -98,7 +98,13 @@ class FinancialAsset:
             for index in range(len(FinancialAsset.domain)):
                 columnKey = FinancialAsset.columnKeyList[index]
                 columnValue = FinancialAsset.columnValueList[index]
-                row[columnValue] = value[index]
+                if (columnKey == "kinds_index"):
+                    try:
+                        row[columnValue] = FinancialAsset.assetsSection[int(value[index])]
+                    except:
+                        continue
+                else :
+                    row[columnValue] = value[index]
                 
             financialAssetData = financialAssetData.append(row, ignore_index = True)
         
@@ -109,6 +115,7 @@ class FinancialAsset:
         financialAssetRawData = self.getFinancialAsset()
     
         financialAssetData = self.procFinancialAsset(financialAssetRawData)
+        financialAssetData = financialAssetData.astype(FinancialAsset.columnType)
         return financialAssetData
 
 # + active=""

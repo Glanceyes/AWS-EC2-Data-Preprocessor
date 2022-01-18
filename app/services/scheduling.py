@@ -56,11 +56,15 @@ class Scheduling:
     
     schedulingSection = ['직업', '학습', '건강', '관계', '주거', '사회참여', '여가']
     
+    activityType = ["목표활동", "일상활동"]
+    
+    nonMappingColumnKey = ["isDone"]
+    nonMappingColumnValue = ["목표활동완료", "일반활동완료"]
     
     # type 컬럼 값에 따라 isDone 값이 매칭되는 컬럼이 목표활동완료 컬럼 또는 일반활동완료 컬럼으로 달라진다.
     
-    columnKeyList = list(domain.keys()) + ["isDone"]
-    columnValueList = list(domain.values()) + ["목표활동완료", "일반활동완료"]
+    columnKeyList = list(domain.keys()) + nonMappingColumnKey
+    columnValueList = list(domain.values()) + nonMappingColumnValue
     
     columnOrder = ["id", "시간관리영역", "시간관리키워드", "시간관리활동종류", "목표활동완료", "일반활동완료", "시간관리연월"]
     
@@ -105,6 +109,9 @@ class Scheduling:
                     except:
                         continue
                 
+                elif (columnKey == "type"):
+                    row["시간관리활동종류"] = Scheduling.activityType[value[index]]
+                
                 # 시간관리영역 컬럼은 값에 따라 영역 이름에 관한 문자열을 mapping 해야 한다.
                 elif (columnKey == "division"):
                     row[columnValue] = Scheduling.schedulingSection[value[index]]
@@ -140,9 +147,8 @@ class Scheduling:
 # # Only for test
 # cursor = connectMySQL()
 # schedulingInstance = Scheduling(cursor)
-# resultDataFrame = schedulingInstance.getScheduling()
-# schedulingData = schedulingInstance.updateScheduling(resultDataFrame)
-# print(schedulingData)
+# schedulingData = schedulingInstance.writeScheduling()
+# display(schedulingData)
 # -
 
 

@@ -64,6 +64,13 @@ class User:
     
     changeGoalCostAttribute = {-1 : "", 1 : 0, 2 : 1}
     
+    columnType = {
+        "id": 'Int64', 
+        "sex": 'Int64', 
+        "기관_key": 'Int64'
+    }
+    
+    
     
     def __init__(self, cursor):
         self.cursor = cursor
@@ -166,9 +173,9 @@ class User:
         self.Agency.getAgency()
         self.Enterprise.getEnterprise()
         self.School.getSchool()
-
         
         userData = self.procUser()
+        userData = userData.astype(User.columnType)
         return userData
 
 
@@ -250,14 +257,14 @@ class School:
         result = self.cursor.fetchall()
         self.schoolRawData = pd.DataFrame(result, columns = School.columnKeyList)
         return self.schoolRawData
-        
+
 
 # + active=""
 # # Only for test
 # cursor = connectMySQL()
 # userInstance = User(cursor)
 # userData = userInstance.writeUser()
-# print(userData)
+# display(userData)
 # -
 
 

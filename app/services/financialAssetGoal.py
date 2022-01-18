@@ -110,7 +110,7 @@ class FinancialAssetGoal:
             
             for index in range(len(assetsDivisionList)):
                 row = defaultRow.copy()
-                row["자산_목표_종류"] = index
+                row["자산_목표_종류"] = FinancialAssetGoal.assetsGoalSection[index]
                 row["자산_목표"] = assetsDivisionList[index]
                 
                 financialAssetGoalData = financialAssetGoalData.append(row, ignore_index = True)

@@ -32,6 +32,18 @@ import pandas as pd
 import import_ipynb
 from IPython.display import display
 
+# +
+# 다른 디렉토리에 있는 모듈 경로 가져오기
+module_path = list()
+
+module_path.append(os.path.abspath(os.getcwd() + '/services'))
+module_path.append(os.path.abspath(os.getcwd() + '/utils'))
+
+for path in module_path:
+    if path not in sys.path:
+        sys.path.append(path)
+# -
+
 # 서비스 계층 class import
 from services.user import User
 from services.lifeScore import LifeScore
@@ -118,3 +130,5 @@ financialAssetInstance = FinancialAsset(cursor)
 financialAssetData = financialAssetInstance.writeFinancialAsset()
 display(financialAssetData)
 writeToCSV(financialAssetData, "financial_asset", "financial_asset")
+
+

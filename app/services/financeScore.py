@@ -116,11 +116,13 @@ class FinanceScore:
         # print(financeScoreData)
         return financeScoreData
 
-# Only for test
-cursor = connectMySQL()
-financeScoreInstance = FinanceScore(cursor)
-resultDataFrame = financeScoreInstance.getFinanceScore()
-financeScoreData = financeScoreInstance.procFinanceScore(resultDataFrame)
-print(financeScoreData)
+# + active=""
+# # Only for test
+# cursor = connectMySQL()
+# financeScoreInstance = FinanceScore(cursor)
+# resultDataFrame = financeScoreInstance.getFinanceScore()
+# financeScoreData = financeScoreInstance.procFinanceScore(resultDataFrame)
+# print(financeScoreData)
+# -
 
 

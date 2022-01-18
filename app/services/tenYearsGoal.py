@@ -51,6 +51,13 @@ class TenYearsGoal:
     columnKeyList = list(domain.keys())
     columnValueList = list(domain.values())
     
+    columnType = {
+        "id": 'Int64', 
+        "십년_목표연도": 'Int64'
+    }
+    
+    goalSection = ['직업', '학습', '건강', '관계', '주거', '사회참여', '여가', '재무']
+    
     keywordExtractorInstance = KeywordExtractor()
     
     def __init__(self, cursor):
@@ -84,25 +91,24 @@ class TenYearsGoal:
                         row[columnValue] = TenYearsGoal.keywordExtractorInstance.extractKeyword(value[index])
                     except:
                         continue
+                elif (columnKey == "division"):
+                    row[columnValue] = TenYearsGoal.goalSection[int(value[index])]
                 else:
                     row[columnValue] = value[index]
             
             tenYearsGoalData = tenYearsGoalData.append(row, ignore_index = True)
         
-        # tenYearsGoalData = tenYearsGoalData.fillna({"10년 목표키워드": ""})
-        tenYearsGoalData = tenYearsGoalData.astype({"id": int, "십년_목표연도": int, "십년_목표영역": int})
+        tenYearsGoalData = tenYearsGoalData.astype(TenYearsGoal.columnType)
         return tenYearsGoalData
     
     def writeTenYearsGoal(self):
         resultData = self.getTenYearsGoal()
         tenYearsGoalData = self.procTenYearsGoal(resultData)
-        # print(tenYearsGoalData)
         return tenYearsGoalData
 
 # + active=""
 # # Only for test
 # cursor = connectMySQL()
 # tenYearsGoalInstance = TenYearsGoal(cursor)
-# resultDataFrame = tenYearsGoalInstance.getTenYearsGoal()
-# tenYearsGoalData = tenYearsGoalInstance.updateTenYearsGoal(resultDataFrame)
-# print(tenYearsGoalData)
+# tenYearsGoalData = tenYearsGoalInstance.writeTenYearsGoal()
+# display(tenYearsGoalData)

@@ -28,7 +28,6 @@ import numpy as np
 import pandas as pd
 import datetime as dt
 from dateutil.parser import parse
-from IPython.display import display
 
 # +
 # 다른 디렉토리에 있는 모듈 import
@@ -118,6 +117,12 @@ class Goal:
                 elif (columnKey == "finishYear"):
                     # 사용자의 생일은 마지막 컬럼에 존재한다.
                     row[columnValue] = int(value[index]) - int(parse(value[Goal.columnKeyList.index("birthday")]).year)
+                
+                elif (columnKey == "useOrSave"):
+                    if (int(value[index]) % 2 == 0):
+                        row[columnValue] = "소멸형"
+                    else:
+                        row[columnValue] = "저축형"
                 
                 # 목표단위 컬럼은 값에서 1을 뺀다.
                 elif (columnKey == "level"):
@@ -209,9 +214,9 @@ class GoalFinance():
                 
                 # spend 컬럼은 소멸성 지출이므로 목표금액성격 컬럼의 값을 0으로 설정한다.
                 if (columnKey == "spend"):
-                    row["목표금액성격"] = 0
+                    row["목표금액성격"] = "소멸형"
                 elif (columnKey == "spendSavable"):
-                    row["목표금액성격"] = 1
+                    row["목표금액성격"] = "저축형"
                     
                 goalFinanceData = goalFinanceData.append(row, ignore_index = True)
         
@@ -234,7 +239,7 @@ class VisionGoal:
         "목표나이": 'Int64', 
         "목표금액설정": 'Int64', 
         "목표금액": 'Int64',
-        "목표금액성격": 'Int64'
+        "목표금액성격": str
     }
     
     def __init__(self, cursor):
@@ -255,7 +260,8 @@ class VisionGoal:
 #
 # cursor = connectMySQL()
 # visionGoalInstance = VisionGoal(cursor)
-# visionGoalInstance.writeVisionGoal()
+# visionGoalData = visionGoalInstance.writeVisionGoal()
+# display(visionGoalData)
 # -
 
 

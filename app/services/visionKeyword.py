@@ -117,11 +117,13 @@ class VisionKeyword:
         # print(visionKeywordData)
         return visionKeywordData
 
-# Only for test
-cursor = connectMySQL()
-visionKeywordInstance = VisionKeyword(cursor)
-resultDataFrame = visionKeywordInstance.getVisionKeyword()
-visionKeywordData = visionKeywordInstance.procVisionKeyword(resultDataFrame)
-print(visionKeywordData)
+# + active=""
+# # Only for test
+# cursor = connectMySQL()
+# visionKeywordInstance = VisionKeyword(cursor)
+# resultDataFrame = visionKeywordInstance.getVisionKeyword()
+# visionKeywordData = visionKeywordInstance.procVisionKeyword(resultDataFrame)
+# print(visionKeywordData)
+# -
 
 
