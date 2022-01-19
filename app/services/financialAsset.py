@@ -54,7 +54,7 @@ class FinancialAsset:
         "cost": "자산_목표_현황"
     }
     
-    assetsSection = ['부동산 자산', '사용 자산', '현금성 자산', '금융 자산', '보장 자산']
+    assetsSection = ['부동산', '사용', '현금성', '금융', '보장']
     
     nonMappingColumnKey = []
     nonMappingColumnValue = []

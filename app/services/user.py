@@ -108,7 +108,7 @@ class User:
                 # 생일은 S3 버킷에 저장할 형식으로 변환한다.
                 if (columnKey == "birthday"):
                     try:
-                        row[columnValue] = parse(value[index]).strftime("%Y.%m.%d")
+                        row[columnValue] = parse(value[index]).strftime("%Y-%m-%d")
                     except:
                         continue
                 

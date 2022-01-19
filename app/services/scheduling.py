@@ -124,7 +124,7 @@ class Scheduling:
                         row["일반활동완료"] = int(value[index]) if not pd.isna(value[index]) else ""
 
                 elif (columnKey == "date"):
-                    row[columnValue] = parse(value[index]).strftime("%Y.%m.%d")
+                    row[columnValue] = parse(value[index]).strftime("%Y-%m-%d")
                         
                 else:
                     row[columnValue] = value[index]

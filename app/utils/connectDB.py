@@ -33,6 +33,6 @@ def connectMySQL():
         return cursor
     except Exception as e:
         print("Database connection failed due to {}".format(e))
-        quit()
+        sys.exit()
 
 

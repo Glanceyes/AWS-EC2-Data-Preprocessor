@@ -56,12 +56,17 @@ from services.financialExpense import FinancialExpense
 from services.financialIncome import FinancialIncome
 from services.financialAssetGoal import FinancialAssetGoal
 from services.financialAsset import FinancialAsset
+from utils.syncWithS3Bucket import SyncWithS3Bucket
 
 # 유틸리티 계층 class import
 from utils.connectDB import connectMySQL
 from utils.writeCSV import writeToCSV
 
-cursor = connectMySQL()
+try:
+    cursor = connectMySQL()
+except Exception as e:
+    display(e)
+    sys.exit()
 
 pd.set_option('display.max_rows', 50)
 
@@ -131,4 +136,5 @@ financialAssetData = financialAssetInstance.writeFinancialAsset()
 display(financialAssetData)
 writeToCSV(financialAssetData, "financial_asset", "financial_asset")
 
-
+syncWithS3BucketInstance = SyncWithS3Bucket()
+syncWithS3BucketInstance.uploadFile()
