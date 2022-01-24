@@ -45,22 +45,25 @@ from utils.keywordExtractor import *
 class Goal:
     
     # Class Variable
-    domain = { "user_id": "id", 
+    domain = { 
+                "user_id": "id", 
                 "level": "목표단위", 
                 "division": "목표영역",
                 "content": "목표내용",
-                "finishYear": "목표나이",
+                "finishYear": "목표연도",
                 "isNeedMoney": "목표금액설정",
                 "cost": "목표금액",
                 "useOrSave": "목표금액성격"
             }
     
     goalSection = ['직업', '학습', '건강', '관계', '주거', '사회참여', '여가']
+    goalLevel = ['최종목표', '대목표', '중목표', '소목표']
     
-    nonMappingColumnKey = ["birthday"]
+    nonMappingColumnKey = []
+    nonMappingColumnValue = []
     
     columnKeyList = list(domain.keys()) + nonMappingColumnKey
-    columnValueList = list(domain.values())
+    columnValueList = list(domain.values()) + nonMappingColumnValue
     
     keywordExtractorInstance = KeywordExtractor()
     
@@ -76,15 +79,11 @@ class Goal:
     def getGoal(self):
         # 사용자별 재무 외의 목표와 생일을 가져온다.
         sqlQuery = """
-                    SELECT * FROM pro.GoalLivingHierarchy AS T1 
-                    LEFT JOIN (
-                        SELECT id, birthday FROM pro.users
-                    ) AS T2
-                    ON T1.user_id = T2.id
+                    SELECT * FROM pro.GoalLivingHierarchy
                     """
         self.cursor.execute(sqlQuery)
         result = self.cursor.fetchall()
-        resultDataFrame = pd.DataFrame(result, columns = Goal.columnKeyList + ['birthday'])
+        resultDataFrame = pd.DataFrame(result, columns = Goal.columnKeyList)
         return resultDataFrame
     
         
@@ -113,21 +112,21 @@ class Goal:
                 elif (columnKey == "division"):
                     row[columnValue] = Goal.goalSection[value[index]]
                 
-                # 목표나이 컬럼은 값에서 사용자의 생일 연도를 뺀다. (연 나이 기준)
-                elif (columnKey == "finishYear"):
-                    # 사용자의 생일은 마지막 컬럼에 존재한다.
-                    row[columnValue] = int(value[index]) - int(parse(value[Goal.columnKeyList.index("birthday")]).year)
-                
                 elif (columnKey == "useOrSave"):
+                    if (value[index] == np.nan):
+                        continue
+                        
                     if (int(value[index]) % 2 == 0):
                         row[columnValue] = "소멸형"
                     else:
                         row[columnValue] = "저축형"
                 
-                # 목표단위 컬럼은 값에서 1을 뺀다.
+                # 목표단위 컬럼은 값에 따라 목표 단계명에 매칭되는 문자열을 찾는다.
                 elif (columnKey == "level"):
-                    row[columnValue] = int(value[index]) - 1
-                
+                    try: 
+                        row[columnValue] = Goal.goalLevel[int(value[index]) - 1]
+                    except:
+                        continue
                 else:
                     row[columnValue] = value[index]
                 
@@ -140,103 +139,96 @@ class Goal:
     def writeGoal(self):
         resultData = self.getGoal()
         goalData = self.procGoal(resultData)
-        goalData = goalData.fillna({"목표내용": ""})
         goalData = goalData.replace({"목표금액": -1}, {"목표금액": np.nan})
         goalData = goalData.replace({"목표금액성격": Goal.changeGoalCostAttribute})
-        # print(goalData)
         return goalData
 
 
-class GoalFinance():
-
+class TenYearsGoal:
+    
     # Class Variable
-    domain = { "user_id": "id", 
-                "level": "목표단위",
-                "endYear": "목표나이",
+    domain = { 
+                "user_id": "id", 
+                "division": "목표영역",
+                "content": "목표내용",
+                "year": "목표연도",
+                "isNeedMoney": "목표금액설정",
+                "cost": "목표금액",
+                "useOrSave": "목표금액성격"
             }
     
-    nonMappingColumnKey = ["spend", "earn", "assets", "spendSavable", "birthday"]
-    nonMappingColumnValue = ["목표영역", "목표내용", "목표금액설정", "목표금액", "목표금액성격"]
+    nonMappingColumnKey = []
+    nonMappingColumnValue = []
     
     columnKeyList = list(domain.keys()) + nonMappingColumnKey
     columnValueList = list(domain.values()) + nonMappingColumnValue
+
+    goalSection = ['직업', '학습', '건강', '관계', '주거', '사회참여', '여가']
     
+    keywordExtractorInstance = KeywordExtractor()
     
     def __init__(self, cursor):
         self.cursor = cursor
         
-        
-    def getGoalFinance(self):
-        # 사용자별 재무 목표와 생일을 가져온다.
+    def getTenYearsGoal(self):
+        # 사용자별 개수 제한 없이 가져온다.
         sqlQuery = """
-                    SELECT * FROM pro.GoalFinance AS T1 
-                    LEFT JOIN (
-                        SELECT id, birthday FROM pro.users
-                    ) AS T2
-                    ON T1.user_id = T2.id
+                    SELECT *
+                    FROM pro.Goal10Year
+                    WHERE user_id IS NOT NULL;
                     """
         self.cursor.execute(sqlQuery)
         result = self.cursor.fetchall()
-        resultDataFrame = pd.DataFrame(result, columns = GoalFinance.columnKeyList)
+        resultDataFrame = pd.DataFrame(result, columns = TenYearsGoal.columnKeyList)
         return resultDataFrame
     
-
-    def procGoalFinance(self, resultData):
-        goalFinanceData = pd.DataFrame(columns = GoalFinance.columnValueList)
+    def procTenYearsGoal(self, resultData):
+        tenYearsGoalData = pd.DataFrame(columns = TenYearsGoal.columnValueList)
         
-        # 재무 목표를 읽어서 데이터 프레임으로 만든다.
         for value in resultData.values:
-            defaultRow = dict()
+            row = dict()
             
-            defaultRow["목표영역"] = "재무"
-            defaultRow["목표금액설정"] = 1
-            
-            for index in range(len(GoalFinance.domain)):
-                columnKey = GoalFinance.columnKeyList[index]
-                columnValue = GoalFinance.columnValueList[index]
+            for index in range(len(TenYearsGoal.columnKeyList)):
+                columnKey = TenYearsGoal.columnKeyList[index]
+                columnValue = TenYearsGoal.columnValueList[index]
                 
-                # 목표나이 컬럼은 값에서 사용자의 생일 연도를 뺀다. (연 나이 기준)
-                if (columnKey == "endYear"):
-                    defaultRow[columnValue] = int(value[index]) - int(parse(value[GoalFinance.columnKeyList.index("birthday")]).year)
-                else:
-                    defaultRow[columnValue] = value[index]
-        
-            
-            for index in range(len(GoalFinance.domain), len(GoalFinance.columnKeyList)):
-                columnKey = GoalFinance.columnKeyList[index]
-                
-                if (columnKey == "birthday"):
-                    continue
-                
-                row = defaultRow.copy()
-                row["목표금액설정"] = 1
-                row["목표금액"] = value[index]
-                
-                # spend 컬럼은 소멸성 지출이므로 목표금액성격 컬럼의 값을 0으로 설정한다.
-                if (columnKey == "spend"):
-                    row["목표금액성격"] = "소멸형"
-                elif (columnKey == "spendSavable"):
-                    row["목표금액성격"] = "저축형"
+                # content 컬럼의 데이터를 NLP(자연어 처리)하여 10년 목표키워드를 구한다.
+                if (columnKey == "content"):
+                    try:
+                        extractKeyword = TenYearsGoal.keywordExtractorInstance.extractKeyword
+                        row[columnValue] = extractKeyword(value[index])
+                    except:
+                        continue
+                elif (columnKey == "division"):
+                    row[columnValue] = TenYearsGoal.goalSection[int(value[index])]
                     
-                goalFinanceData = goalFinanceData.append(row, ignore_index = True)
-        
-        return goalFinanceData
+                elif (columnKey == "useOrSave"):
+                    if (np.isnan(value[index])):
+                        continue
+                        
+                    if (int(value[index]) % 2 == 0):
+                        row[columnValue] = "소멸형"
+                    else:
+                        row[columnValue] = "저축형"
+                else:
+                    row[columnValue] = value[index]
+                    
+            tenYearsGoalData = tenYearsGoalData.append(row, ignore_index = True)
+        return tenYearsGoalData
     
-    
-    def writeGoalFinance(self):
-        resultData = self.getGoalFinance()
-        goalFinanceData = self.procGoalFinance(resultData)
-        goalFinanceData = goalFinanceData.fillna({"목표내용": ""})
-        return goalFinanceData
+    def writeTenYearsGoal(self):
+        resultData = self.getTenYearsGoal()
+        tenYearsGoalData = self.procTenYearsGoal(resultData)
+        return tenYearsGoalData
 
 
 class VisionGoal:
     columnType = {
         "id": 'Int64', 
-        "목표단위": 'Int64', 
+        "목표단위": str, 
         "목표영역": str, 
         "목표내용": str, 
-        "목표나이": 'Int64', 
+        "목표연도": 'Int64', 
         "목표금액설정": 'Int64', 
         "목표금액": 'Int64',
         "목표금액성격": str
@@ -244,15 +236,20 @@ class VisionGoal:
     
     def __init__(self, cursor):
         self.goalInstance = Goal(cursor)
-        self.goalFinanceInstance = GoalFinance(cursor)
+        self.tenYearsGoalInstance = TenYearsGoal(cursor)
         
     def writeVisionGoal(self):
         goalInstance = self.goalInstance
-        goalFinanceInstance = self.goalFinanceInstance
+        tenYearsGoalInstance = self.tenYearsGoalInstance
+        
         goalDataFrame = goalInstance.writeGoal()
-        goalFinanceDataFrame = goalFinanceInstance.writeGoalFinance()
-        visionGoalData = pd.concat([goalDataFrame, goalFinanceDataFrame], ignore_index = True)
+        tenYearsGoalDataFrame = tenYearsGoalInstance.writeTenYearsGoal()
+        
+        visionGoalData = pd.concat([goalDataFrame, tenYearsGoalDataFrame], ignore_index = True)
+        visionGoalData = visionGoalData.fillna({"목표내용": "", "목표금액성격": "", "목표단위": ""})
         visionGoalData = visionGoalData.astype(VisionGoal.columnType)
+        visionGoalData.loc[visionGoalData["목표금액설정"] == 0, "목표금액"] = np.nan
+        
         return visionGoalData
 
 # + active=""

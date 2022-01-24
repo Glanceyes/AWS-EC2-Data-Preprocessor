@@ -47,20 +47,20 @@ for path in module_path:
 # 서비스 계층 class import
 from services.user import User
 from services.lifeScore import LifeScore
-from services.tenYearsGoal import TenYearsGoal
 from services.financeScore import FinanceScore
 from services.visionGoal import VisionGoal
 from services.scheduling import Scheduling
 from services.visionKeyword import VisionKeyword
+from services.goalFinance import GoalFinance
 from services.financialExpense import FinancialExpense
 from services.financialIncome import FinancialIncome
 from services.financialAssetGoal import FinancialAssetGoal
 from services.financialAsset import FinancialAsset
-from utils.syncWithS3Bucket import SyncWithS3Bucket
 
 # 유틸리티 계층 class import
 from utils.connectDB import connectMySQL
 from utils.writeCSV import writeToCSV
+from utils.syncWithS3Bucket import SyncWithS3Bucket
 
 try:
     cursor = connectMySQL()
@@ -76,11 +76,13 @@ lifeScoreData = lifeScoreInstance.writeLifeScore()
 display(lifeScoreData)
 writeToCSV(lifeScoreData, "life_score", "life_score")
 
-# tenYearsGoal 데이터 전처리 후 csv 파일 작성
-tenYearsGoalInstance = TenYearsGoal(cursor)
-tenYearsGoalData = tenYearsGoalInstance.writeTenYearsGoal()
-display(tenYearsGoalData)
-writeToCSV(tenYearsGoalData, "ten_years_goal", "ten_years_goal")
+# + active=""
+# # tenYearsGoal 데이터 전처리 후 csv 파일 작성
+# tenYearsGoalInstance = TenYearsGoal(cursor)
+# tenYearsGoalData = tenYearsGoalInstance.writeTenYearsGoal()
+# display(tenYearsGoalData)
+# writeToCSV(tenYearsGoalData, "ten_years_goal", "ten_years_goal")
+# -
 
 # financeScore 데이터 전처리 후 csv 파일 작성
 financeScoreInstance = FinanceScore(cursor)
@@ -112,6 +114,13 @@ visionKeywordData = visionKeywordInstance.writeVisionKeyword()
 display(visionKeywordData)
 writeToCSV(visionKeywordData, "vision_keyword", "vision_keyword")
 
+# goalFinance 데이터 전처리 후 csv 파일 생성
+goalFinanceInstance = GoalFinance(cursor)
+goalFinanceData, goalFinancialIdData = goalFinanceInstance.writeGoalFinance()
+display(goalFinanceData, goalFinancialIdData)
+writeToCSV(goalFinanceData, "goal_finance", "goal_finance")
+writeToCSV(goalFinancialIdData, "goal_financial_id", "goal_financial_id")
+
 # financialExpense 데이터 전처리 후 csv 파일 생성
 financialExpenseInstance = FinancialExpense(cursor)
 financialExpenseData = financialExpenseInstance.writeFinancialExpense()
@@ -120,9 +129,10 @@ writeToCSV(financialExpenseData, "financial_exp", "financial_exp")
 
 # financialIncome 데이터 전처리 후 csv 파일 생성
 financialIncomeInstance = FinancialIncome(cursor)
-financialIncomeData = financialIncomeInstance.writeFinancialIncome()
-display(financialIncomeData)
+financialIncomeData, incomeIdData = financialIncomeInstance.writeFinancialIncome()
+display(financialIncomeData, incomeIdData)
 writeToCSV(financialIncomeData, "financial_inc", "financial_inc")
+writeToCSV(incomeIdData, "financial_inc_id", "financial_inc_id")
 
 # financialAssetGoal 데이터 전처리 후 csv 파일 생성
 financialAssetGoalInstance = FinancialAssetGoal(cursor)
@@ -132,9 +142,10 @@ writeToCSV(financialAssetGoalData, "financial_asset_goal", "financial_asset_goal
 
 # financialAsset 데이터 전처리 후 csv 파일 생성
 financialAssetInstance = FinancialAsset(cursor)
-financialAssetData = financialAssetInstance.writeFinancialAsset()
-display(financialAssetData)
+financialAssetData, assetIdData = financialAssetInstance.writeFinancialAsset()
+display(financialAssetData, assetIdData)
 writeToCSV(financialAssetData, "financial_asset", "financial_asset")
+writeToCSV(assetIdData, "financial_asset_id", "financial_asset_id")
 
 syncWithS3BucketInstance = SyncWithS3Bucket()
 syncWithS3BucketInstance.uploadFile()

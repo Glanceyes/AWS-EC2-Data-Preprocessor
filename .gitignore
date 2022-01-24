@@ -3,6 +3,8 @@
 **/.virtual_documents/
 **/log/
 **/data/
+**/shell/
+**/app_dev/
 
 *.csv
 *.ipynb

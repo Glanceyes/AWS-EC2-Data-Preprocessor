@@ -56,10 +56,21 @@ class FinancialIncome:
     incomeSection = ['연금소득', '근로/사업소득', '자산소득', '이전소득', '기타소득', '증여상속']
     
     nonMappingColumnKey = ["isDivisionSet", "earnDivisionByMonth"]
-    nonMappingColumnValue = ["소득_월", "소득_목표_종류", "소득_목표", "소득_목표_현황"]
+    nonMappingColumnValue = ["소득_월", "소득_목표_종류", "소득_목표", "소득_목표_현황", "incomeId"]
     
     columnKeyList = list(domain.keys()) + nonMappingColumnKey
     columnValueList = list(domain.values()) + nonMappingColumnValue
+    
+    incomeIdColumnList = ["incomeId", "소득현황항목", "소득현황금액"]
+    
+    incomeItem = {
+        "연금소득": ["공적연금소득", "퇴직연금소득", "기타연금소득"],
+        "근로/사업소득": ["근로소득", "사업소득", "기타소득"],
+        "자산소득": ["금융투자소득", "자산임대소득", "자산매각소득"],
+        "이전소득": ["공적이전금", "사적이전금"],
+        "기타소득": ["일시소득", "부채"],
+        "증여상속": ["증여소득", "상속소득"]
+    }
     
     columnType = {
         "id": 'Int64', 
@@ -88,8 +99,13 @@ class FinancialIncome:
     
     
     def procFinancialIncome(self, financialIncomeRawData, financialIncomeLiveRawData):
+        
         financialIncomeData = pd.DataFrame(columns = FinancialIncome.columnValueList)
-            
+        incomeIdData = pd.DataFrame(columns = FinancialIncome.incomeIdColumnList)
+        
+        financialIncomeLiveGroupData = financialIncomeLiveRawData.groupby(["user_id", "year", "month", "earnDivisionInt"], as_index = False).sum()
+        
+        
         # 소득 내역을 가져와서 데이터프레임을 만든다.
         for value in financialIncomeRawData.values:
             defaultRow = dict()
@@ -115,31 +131,61 @@ class FinancialIncome:
                     defaultRow["소득_월"] = "{}".format(index + 1)
                     for index2 in range(len(FinancialIncome.incomeSection)):
                         row = defaultRow.copy()
-                        row["소득_목표_종류"] = FinancialIncome.incomeSection[index2]
+                        incomeSectionName = FinancialIncome.incomeSection[index2]
+                        row["소득_목표_종류"] = incomeSectionName
                         row["소득_목표"] = earnMonthList[index][index2] * 10000
                         
+                        
+                        
+                        incomeLiveGroupDataFrame = financialIncomeLiveGroupData
+                        incomeLiveGroupCost = incomeLiveGroupDataFrame.loc[
+                            (incomeLiveGroupDataFrame["user_id"] == int(row["id"])) &
+                            (incomeLiveGroupDataFrame["year"] == int(row["소득_연도"])) &
+                            (incomeLiveGroupDataFrame["month"] == int(row["소득_월"])) &
+                            (incomeLiveGroupDataFrame["earnDivisionInt"] == index2)
+                        ]
+                        
+                        if (not incomeLiveGroupCost.empty):
+                            row["소득_목표_현황"] = incomeLiveGroupCost["cost"].values[0]
+                        
                         incomeLiveDataFrame = financialIncomeLiveRawData
-                        incomeLiveCost = incomeLiveDataFrame.loc[
+                        incomeLiveCostList = incomeLiveDataFrame.loc[
+                            (incomeLiveDataFrame["user_id"] == int(row["id"])) &
                             (incomeLiveDataFrame["year"] == int(row["소득_연도"])) &
                             (incomeLiveDataFrame["month"] == int(row["소득_월"])) &
-                            (incomeLiveDataFrame["user_id"] == int(row["id"])) &
                             (incomeLiveDataFrame["earnDivisionInt"] == index2)
                         ]
                         
-                        if (not incomeLiveCost.empty):
-                                row["소득_목표_현황"] = incomeLiveCost["cost"].values[0]
+                        
+                        if (not incomeLiveCostList.empty):
+                            incomeIdRow = dict()
+                            
+                            incomeIdValue = incomeIdData["incomeId"].max()
+                            incomeIdValue = incomeIdValue + 1 if incomeIdValue is not np.nan else 1
+                            
+                            row["incomeId"] = incomeIdValue
+                            incomeIdRow["incomeId"] = incomeIdValue
+                            
+                            # 되도록이면 나머지도 데이터프레임의 row를 to_dict 메소드의 'records' parameter를 통해 dictionary type으로 바꿀 필요가 있다.
+                            for incomeCost in incomeLiveCostList.to_dict('records'):
+                                incomeItemList = FinancialIncome.incomeItem[incomeSectionName]
+                                if (incomeCost["earnDivisionItem"] in incomeItemList):
+                                    incomeIdRow["소득현황항목"] = incomeCost["earnDivisionItem"]
+                                    incomeIdRow["소득현황금액"] = incomeCost["cost"]
+                                    incomeIdData = incomeIdData.append(incomeIdRow, ignore_index = True)
+                                    
                         
                         financialIncomeData = financialIncomeData.append(row, ignore_index = True)
         
-        return financialIncomeData
+        return financialIncomeData, incomeIdData
    
     
     def writeFinancialIncome(self):
         financialIncomeRawData = self.getFinancialIncome()
         financialIncomeLiveRawData = self.FinancialIncomeLive.getFinancialIncomeLive()
-    
-        financialIncomeData = self.procFinancialIncome(financialIncomeRawData, financialIncomeLiveRawData)
-        return financialIncomeData
+
+        financialIncomeData, incomeIdData = self.procFinancialIncome(financialIncomeRawData, financialIncomeLiveRawData)
+        return financialIncomeData, incomeIdData
 
 
 class FinancialIncomeLive:
@@ -148,7 +194,8 @@ class FinancialIncomeLive:
         "user_id": "id", 
         "year": "소득_연도",
         "month": "소득_월",
-        "earnDivisionInt": "소득_목표_영역",
+        "earnDivisionInt": "소득_현황_영역",
+        "earnDivisionItem": "소득_현황_항목",
         "cost": "소득_목표_현황"
     }
     
@@ -165,9 +212,9 @@ class FinancialIncomeLive:
     
     def getFinancialIncomeLive(self):
         sqlQuery = """            
-                    SELECT user_id, year, month, earnDivisionInt, SUM(cost) as cost
+                    SELECT user_id, year, month, earnDivisionInt, earnDivisionItem, SUM(cost) as cost
                     FROM pro.EarnLedger
-                    GROUP BY user_id, year, month, earnDivisionInt;
+                    GROUP BY user_id, year, month, earnDivisionInt, earnDivisionItem;
                     """
         self.cursor.execute(sqlQuery)
         result = self.cursor.fetchall()
@@ -180,7 +227,7 @@ class FinancialIncomeLive:
 #
 # cursor = connectMySQL()
 # financialIncomeInstance = FinancialIncome(cursor)
-# financialIncomeData = financialIncomeInstance.writeFinancialIncome()
-# display(financialIncomeData)
+# financialIncomeData, incomeIdData = financialIncomeInstance.writeFinancialIncome()
+# display(financialIncomeData, incomeIdData)
 # -
 
