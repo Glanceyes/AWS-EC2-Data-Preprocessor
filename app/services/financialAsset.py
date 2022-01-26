@@ -141,7 +141,7 @@ class FinancialAsset:
                         assetItemIndex = assetCost["classification_index"]
                         if (int(assetItemIndex) < len(assetItemList)):
                             assetIdRow["자산현황항목"] = assetItemList[assetItemIndex]
-                            assetIdRow["자산현황금액"] = assetCost["cost"]
+                            assetIdRow["자산현황금액"] = int(assetCost["cost"])
                             assetIdData = assetIdData.append(assetIdRow, ignore_index = True)
                 
             financialAssetData = financialAssetData.append(row, ignore_index = True)

@@ -106,7 +106,7 @@ writeToCSV(schedulingData, "scheduling", "scheduling")
 userInstance = User(cursor)
 userData = userInstance.writeUser()
 display(userData)
-writeToCSV(userData, "user", "user")
+writeToCSV(userData, "users", "users")
 
 # visionKeyword 데이터 전처리 후 csv 파일 생성
 visionKeywordInstance = VisionKeyword(cursor)

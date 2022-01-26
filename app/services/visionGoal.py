@@ -68,8 +68,6 @@ class Goal:
     keywordExtractorInstance = KeywordExtractor()
     
     changeGoalCostAttribute = {-1 : np.nan, 1 : 0, 2 : 1}
-
-    
     
     def __init__(self, cursor):
         self.cursor = cursor
@@ -141,6 +139,7 @@ class Goal:
         goalData = self.procGoal(resultData)
         goalData = goalData.replace({"목표금액": -1}, {"목표금액": np.nan})
         goalData = goalData.replace({"목표금액성격": Goal.changeGoalCostAttribute})
+        
         return goalData
 
 
@@ -234,6 +233,8 @@ class VisionGoal:
         "목표금액성격": str
     }
     
+    stringColumnList = ["목표단위", "목표내용"]
+    
     def __init__(self, cursor):
         self.goalInstance = Goal(cursor)
         self.tenYearsGoalInstance = TenYearsGoal(cursor)
@@ -246,6 +247,7 @@ class VisionGoal:
         tenYearsGoalDataFrame = tenYearsGoalInstance.writeTenYearsGoal()
         
         visionGoalData = pd.concat([goalDataFrame, tenYearsGoalDataFrame], ignore_index = True)
+        visionGoalData[VisionGoal.stringColumnList] = visionGoalData[VisionGoal.stringColumnList].replace(np.nan, '', regex=True)
         visionGoalData = visionGoalData.fillna({"목표내용": "", "목표금액성격": "", "목표단위": ""})
         visionGoalData = visionGoalData.astype(VisionGoal.columnType)
         visionGoalData.loc[visionGoalData["목표금액설정"] == 0, "목표금액"] = np.nan

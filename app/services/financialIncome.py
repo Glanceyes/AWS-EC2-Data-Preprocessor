@@ -73,10 +73,11 @@ class FinancialIncome:
     }
     
     columnType = {
-        "id": 'Int64', 
-        "소득_목표_종류": 'Int64', 
-        "소득_목표": 'Int64', 
-        "소득_목표_현황": 'Int64'
+        "id": 'Int64',
+        "소득_연도": 'Int64',
+        "소득_월": 'Int64',
+        "소득_목표": 'Int64',
+        "incomeId": 'Int64'
     }
     
     
@@ -128,7 +129,7 @@ class FinancialIncome:
             
             for index in range(len(divisionSetList)):
                 if (divisionSetList[index] == True):
-                    defaultRow["소득_월"] = "{}".format(index + 1)
+                    defaultRow["소득_월"] = index + 1
                     for index2 in range(len(FinancialIncome.incomeSection)):
                         row = defaultRow.copy()
                         incomeSectionName = FinancialIncome.incomeSection[index2]
@@ -185,6 +186,7 @@ class FinancialIncome:
         financialIncomeLiveRawData = self.FinancialIncomeLive.getFinancialIncomeLive()
 
         financialIncomeData, incomeIdData = self.procFinancialIncome(financialIncomeRawData, financialIncomeLiveRawData)
+        financialIncomeData = financialIncomeData.astype(FinancialIncome.columnType)
         return financialIncomeData, incomeIdData
 
 

@@ -36,11 +36,30 @@ if module_path not in sys.path:
 from utils.connectDB import connectMySQL
 
 
+# +
+# pd.set_option('display.max_rows', None)
 # -
 
 class LifeScore:
     
+    domain = { 
+            "user_id": "id"
+    }
+    
     scoreSection = ['직업', '학습', '건강', '관계', '주거', '사회참여', '여가', '재무']
+    
+    nonMappingColumnKey = ["pageResult"]
+    nonMappingColumnValue = ["영역", "영역점수"]
+    
+    columnKeyList = list(domain.keys()) + nonMappingColumnKey
+    columnValueList = list(domain.values()) + nonMappingColumnValue
+    
+    columnType = {
+        "id": 'Int64', 
+        "영역": 'str', 
+        "영역점수": 'Int64'
+    }
+    
     
     def __init__(self, cursor):
         self.cursor = cursor
@@ -57,11 +76,11 @@ class LifeScore:
                     """
         self.cursor.execute(sqlQuery)
         result = self.cursor.fetchall()
-        resultDataFrame = pd.DataFrame(result, columns = ['user_id', 'pageResult'])
+        resultDataFrame = pd.DataFrame(result, columns = LifeScore.columnKeyList)
         return resultDataFrame
     
     def procLifeScore(self, lifeScoreRawData):
-        lifeScoreData = pd.DataFrame()
+        lifeScoreData = pd.DataFrame(columns = LifeScore.columnValueList)
         
         # 8대 영역별 점수에 관한 데이터는 pageResult에서 3번째 section(index상 2번째)에 해당된다.
         sectionNum = 2 # index 기준
@@ -71,17 +90,19 @@ class LifeScore:
         
         for value in lifeScoreRawData.values:
             # pageResult 컬럼의 string 타입 데이터를 json으로 전처리한다.
-            row = {'id': value[0]}
+            row = dict()
+            row["id"] = value[0]
             for index in range(len(LifeScore.scoreSection)):
-                row[LifeScore.scoreSection[index]] = int(json.loads(value[columnIndex])[sectionNum][str(index)]) * 20
-            lifeScoreData = lifeScoreData.append(row, ignore_index = True)
-        lifeScoreData = lifeScoreData.astype('int')
+                row["영역"] = LifeScore.scoreSection[index]
+                row["영역점수"] = int(json.loads(value[columnIndex])[sectionNum][str(index)]) * 20
+                lifeScoreData = lifeScoreData.append(row, ignore_index = True)
+        
         return lifeScoreData
     
     def writeLifeScore(self):
         lifeScoreRawData = self.getLifeScore()
         lifeScoreData = self.procLifeScore(lifeScoreRawData)
-        # print(lifeScoreData)
+        lifeScoreData = lifeScoreData.astype(LifeScore.columnType)
         return lifeScoreData
 
 # + active=""

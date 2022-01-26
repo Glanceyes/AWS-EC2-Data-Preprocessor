@@ -64,13 +64,13 @@ class User:
     
     changeGoalCostAttribute = {-1 : "", 1 : 0, 2 : 1}
     
+    stringColumnList = ["기관_type", "직책", "부서", "직위"]
+    
     columnType = {
         "id": 'Int64', 
         "sex": 'Int64', 
         "기관_key": 'Int64'
     }
-    
-    
     
     def __init__(self, cursor):
         self.cursor = cursor
@@ -176,6 +176,7 @@ class User:
         
         userData = self.procUser()
         userData = userData.astype(User.columnType)
+        userData[User.stringColumnList] = userData[User.stringColumnList].replace(np.nan, None, regex=True)
         return userData
 
 

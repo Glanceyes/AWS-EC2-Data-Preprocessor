@@ -113,7 +113,6 @@ class FinanceScore:
     def writeFinanceScore(self):
         resultData = self.getFinanceScore()
         financeScoreData = self.procFinanceScore(resultData)
-        # print(financeScoreData)
         return financeScoreData
 
 # + active=""
